@@ -2,10 +2,26 @@
 #include <SFML/OpenGL.hpp>
 
 int main() {
-    sf::Window window(sf::VideoMode({1920u, 1080u}), "Obelisk", sf::Style::Default, sf::State::Windowed, sf::ContextSettings());
+    // OpenGL Context Setup
+    sf::ContextSettings contextSettings;
+    contextSettings.depthBits = 24;
+    contextSettings.stencilBits = 8;
+    contextSettings.antiAliasingLevel = 4;
+    contextSettings.majorVersion = 3;
+    contextSettings.minorVersion = 0;
+    contextSettings.attributeFlags = contextSettings.Default;
+    contextSettings.sRgbCapable = true;
+
+    // SFML Window Setup
+    sf::Window window(sf::VideoMode({1920u, 1080u}), "Obelisk", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(144);
     window.setVerticalSyncEnabled(true);
-    window.setActive(true);
+    if (!window.setActive(true)) {
+        return -1;
+    };
+
+    // GL Setup
+    glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
 
     bool running = true;
     while (running) {
