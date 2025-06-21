@@ -1,19 +1,18 @@
-# Base config
-cmake_minimum_required(VERSION 3.30)
-project(obelisk)
+####### Obelisk v0.02 #######
+cmake_minimum_required(VERSION 3.28)
+project(obelisk LANGUAGES CXX)
 
-# Compiler options
-add_link_options(-lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# Libraries
-find_package(OpenGL REQUIRED)
-add_subdirectory(lib//glfw-3.4)
-include_directories(lib/glad/include)
+include(FetchContent)
+FetchContent_Declare(SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 3.0.1
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM)
+FetchContent_MakeAvailable(SFML)
 
-# Src files
-set(SOURCE_FILES src/main.cpp src/glad.c)
-
-# Add executable
-add_executable(obelisk ${SOURCE_FILES})
-target_link_libraries(obelisk OpenGL::GL glfw3)
+add_executable(main src/main.cpp)
+target_compile_features(main PRIVATE cxx_std_17)
+target_link_libraries(main PRIVATE SFML::Graphics SFML::Audio SFML::Network)
