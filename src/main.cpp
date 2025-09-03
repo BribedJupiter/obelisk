@@ -48,18 +48,28 @@ int main() {
     }
 
     // Load Shaders
-    std::string vertexShaderString = loadShaders("{PROJECT_PATH}/src/vertexShader.glsl");
-    std::string fragmentShaderString = loadShaders("{PROJECT_PATH}/src/fragmentShader.glsl");
+    std::string vertexShaderString = loadShaders("C:/Users/jgb10/dev/obelisk/src/vertexShader.glsl");
+    std::string fragmentShaderString = loadShaders("C:/Users/jgb10/dev/obelisk/src/fragmentShader.glsl");
+    if (vertexShaderString == "" || fragmentShaderString == "") {
+        return -1;
+    }
 
     // GL Setup
     glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
 
     // See the LearnOpenGL textbook
-    // Constants for sandbox
+    // Store the rectangle's vertices
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+        -0.5f, -0.5f, 0.0f, // bottom left
+        0.5f, -0.5f, 0.0f, // bottom right
+        0.5f, 0.5f, 0.0f, // top right
+        -0.5f, 0.5f, 0.0f // top left
+    };
+
+    // Store which vertices correspond to which shape
+    unsigned int indices[] = {
+        0, 1, 3, // triangle 1
+        1, 2, 3 // triangle 2
     };
 
     // Create a vertex array object (VAO) to store vertex attribute states
@@ -72,6 +82,12 @@ int main() {
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Store which indices OpenGL should use to draw
+    unsigned int EBO;
+    glGenBuffers(1, &EBO); 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Compile vertex shader
     const char* vertexShaderSource = vertexShaderString.c_str();
@@ -130,10 +146,6 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Prepare to draw
-    glUseProgram(shaderProgram);
-    glBindVertexArray(VAO);
-
     bool running = true;
     while (running) {
         while (const std::optional event = window.pollEvent())
@@ -150,7 +162,12 @@ int main() {
 
         // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // Prepare to draw
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         // Draw
         static int xPos = 0;
