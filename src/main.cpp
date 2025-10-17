@@ -59,6 +59,9 @@ int main() {
         return -1;
     }
 
+    // Start the SFML clock
+    sf::Clock clock;
+
     // Enable debug output (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
     glEnable( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( MessageCallback, 0 );
@@ -77,10 +80,11 @@ int main() {
     // See the LearnOpenGL textbook
     // Store the rectangle's vertices
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // bottom left
-        0.5f, -0.5f, 0.0f, // bottom right
-        0.5f, 0.5f, 0.0f, // top right
-        -0.5f, 0.5f, 0.0f // top left
+        // 1st 3 = positions, 2nd 3 = colors
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // top right
+        -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f // top left
     };
 
     // Store which vertices correspond to which shape
@@ -160,8 +164,12 @@ int main() {
 
     // Link the vertex attributes
     // Note that the previous VBO is still bound, so this will apply to that
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     bool running = true;
     while (running) {
@@ -197,8 +205,17 @@ int main() {
         // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Update shader uniforms
+        float timeValue = static_cast<float>(clock.getElapsedTime().asSeconds());
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        if (vertexColorLocation == -1) {
+            std::cerr << "Unable to find color uniform" << std::endl;
+        }
+
         // Prepare to draw
-        glUseProgram(shaderProgram);
+        glUseProgram(shaderProgram); // must use shader program before updating uniform values
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f); // Update shader color
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
