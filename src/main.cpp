@@ -1,6 +1,8 @@
 #include "glad/glad.h"
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
+#include <filesystem>
+#include <stb_image.h>
 
 #include "obShader.h"
 
@@ -56,11 +58,11 @@ int main() {
     // See the LearnOpenGL textbook
     // Store the rectangle's vertices
     float vertices[] = {
-        // 1st 3 = positions, 2nd 3 = colors
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // top right
-        -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f // top left
+        // 1st 3 = positions, 2nd 3 = colors, 3rd 3 = texture coords
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // bottom left
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,  0.0f, // top right
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
     };
 
     // Store which vertices correspond to which shape
@@ -89,14 +91,43 @@ int main() {
     // Link the vertex attributes
     // Note that the previous VBO is still bound, so this will apply to that
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // texture coords
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // Load and compile our shaders
     Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
+
+    // Create  OpenGL texture
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Setup texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Load image texture
+    int width, height, nrChannels;
+    std::string containerPath = std::filesystem::path(TEXTURE_PATH).string() + "/container.jpg";
+    unsigned char *data = stbi_load(containerPath.c_str(), &width, &height, &nrChannels, 0);
+    if (data) {
+        // Generate actual texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cerr << "TEXTURE::FAILED_TO_LOAD" << std::endl;
+    }
+
+    // Now free the image data since it has been loaded into OpenGL
+    stbi_image_free(data);
 
     bool running = true;
     while (running) {
@@ -132,12 +163,9 @@ int main() {
         // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update shaders with a bounded time value
-        float timeValue = sin(static_cast<float>(clock.getElapsedTime().asSeconds()) / 2.0f) + 0.5f;
-
         // Prepare to draw
         ourShader.use(); // must use shader program before updating uniform values
-        ourShader.setFloat("time", timeValue); // Update shader color
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
