@@ -2,12 +2,23 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include <array>
 #include <exception>
 #include <iostream>
 #include <fstream>
 #include <iterator>
 #include <string>
+
+// Khronos debug function converted to C++ (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
+void GLAPIENTRY MessageCallback(GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam)
+{
+    std::cerr << "GL CALLBACK: " << message << std::endl;
+}
 
 std::string loadShaders(const std::string filename) {
     std::ifstream file;
@@ -30,8 +41,8 @@ int main() {
     contextSettings.depthBits = 24;
     contextSettings.stencilBits = 8;
     contextSettings.antiAliasingLevel = 4;
-    contextSettings.majorVersion = 3;
-    contextSettings.minorVersion = 0;
+    contextSettings.majorVersion = 4;
+    contextSettings.minorVersion = 6;
     contextSettings.attributeFlags = contextSettings.Default;
     contextSettings.sRgbCapable = true;
 
@@ -47,6 +58,10 @@ int main() {
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(sf::Context::getFunction))) {
         return -1;
     }
+
+    // Enable debug output (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
+    glEnable( GL_DEBUG_OUTPUT );
+    glDebugMessageCallback( MessageCallback, 0 );
 
     // Load Shaders
     const std::filesystem::path shaderSourceDir = SHADER_PATH;
