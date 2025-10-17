@@ -6,6 +6,6 @@ out vec3 ourColor;
 uniform float time;
 
 void main() {
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = vec3(aColor.r, aColor.g + time, aColor.b);
+    gl_Position = vec4(aPos, time + 1.0);
+    ourColor = vec3(aColor.r, aColor.g, aColor.b);
 }

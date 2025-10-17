@@ -131,7 +131,7 @@ int main() {
         // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update colors by time
+        // Update shaders with a bounded time value
         float timeValue = sin(static_cast<float>(clock.getElapsedTime().asSeconds()) / 2.0f) + 0.5f;
 
         // Prepare to draw
