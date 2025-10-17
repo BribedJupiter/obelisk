@@ -86,8 +86,6 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
-
     // Link the vertex attributes
     // Note that the previous VBO is still bound, so this will apply to that
     // position attribute
@@ -96,6 +94,9 @@ int main() {
     // color attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Load and compile our shaders
+    Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
 
     bool running = true;
     while (running) {
