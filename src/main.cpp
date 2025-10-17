@@ -2,10 +2,9 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include <exception>
+#include "obShader.h"
+
 #include <iostream>
-#include <fstream>
-#include <iterator>
 #include <string>
 
 // Khronos debug function converted to C++ (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
@@ -18,21 +17,6 @@ void GLAPIENTRY MessageCallback(GLenum source,
                  const void* userParam)
 {
     std::cerr << "GL CALLBACK: " << message << std::endl;
-}
-
-std::string loadShaders(const std::string filename) {
-    std::ifstream file;
-    file.exceptions(file.exceptions() | std::ios::failbit);
-    try {
-        file.open(filename.c_str());
-    } catch (std::exception e) {
-        std::cout << "Error opening " << filename  << " -> " << e.what() << std::endl;
-        return "";
-    }
-
-    std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    file.close();
-    return text;
 }
 
 int main() {
@@ -65,14 +49,6 @@ int main() {
     // Enable debug output (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
     glEnable( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( MessageCallback, 0 );
-
-    // Load Shaders
-    const std::filesystem::path shaderSourceDir = SHADER_PATH;
-    std::string vertexShaderString = loadShaders(shaderSourceDir.string() + "/vertexShader.glsl");
-    std::string fragmentShaderString = loadShaders(shaderSourceDir.string() + "/fragmentShader.glsl");
-    if (vertexShaderString == "" || fragmentShaderString == "") {
-        return -1;
-    }
 
     // GL Setup
     glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
@@ -110,57 +86,7 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // Compile vertex shader
-    const char* vertexShaderSource = vertexShaderString.c_str();
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Check if vertex shader compilation was successful
-    int vertexShaderCompilationSuccess;
-    char vertexInfoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &vertexShaderCompilationSuccess);
-    if (!vertexShaderCompilationSuccess) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, vertexInfoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << vertexInfoLog << std::endl;
-    }
-
-    // Compile fragment shader
-    const char* fragmentShaderSource = fragmentShaderString.c_str();
-    unsigned int fragmentShader;
-    fragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Check if fragment shader compilation was successful
-    int fragmentShaderCompilationSuccess;
-    char fragmentInfoLog[512];
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragmentShaderCompilationSuccess);
-    if (!fragmentShaderCompilationSuccess) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, fragmentInfoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << fragmentInfoLog << std::endl;
-    }
-
-    // Setup shader program
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // Check for shader program success
-    int shaderProgramSuccess;
-    char programInfoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &shaderProgramSuccess);
-    if (!shaderProgramSuccess) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, programInfoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << programInfoLog << std::endl;
-    }
-
-    // Delete the now unneeded (after linking) shader objects
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
 
     // Link the vertex attributes
     // Note that the previous VBO is still bound, so this will apply to that
@@ -205,17 +131,12 @@ int main() {
         // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update shader uniforms
-        float timeValue = static_cast<float>(clock.getElapsedTime().asSeconds());
-        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        if (vertexColorLocation == -1) {
-            std::cerr << "Unable to find color uniform" << std::endl;
-        }
+        // Update colors by time
+        float timeValue = sin(static_cast<float>(clock.getElapsedTime().asSeconds()) / 2.0f) + 0.5f;
 
         // Prepare to draw
-        glUseProgram(shaderProgram); // must use shader program before updating uniform values
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f); // Update shader color
+        ourShader.use(); // must use shader program before updating uniform values
+        ourShader.setFloat("time", timeValue); // Update shader color
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

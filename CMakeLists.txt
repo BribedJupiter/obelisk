@@ -14,8 +14,8 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp lib/glad/src/glad.c)
-target_include_directories(main PRIVATE lib/glad/include PRIVATE lib/glad/KHR)
+add_executable(main src/main.cpp src/obShader.cpp lib/glad/src/glad.c)
+target_include_directories(main PRIVATE src PRIVATE lib/glad/include PRIVATE lib/glad/KHR)
 target_compile_features(main PRIVATE cxx_std_17)
 target_compile_definitions(main PRIVATE
     SHADER_PATH="${CMAKE_SOURCE_DIR}/shaders"
