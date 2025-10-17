@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
+#include <array>
 #include <exception>
 #include <iostream>
 #include <fstream>
@@ -48,8 +49,9 @@ int main() {
     }
 
     // Load Shaders
-    std::string vertexShaderString = loadShaders("C:/Users/jgb10/dev/obelisk/src/vertexShader.glsl");
-    std::string fragmentShaderString = loadShaders("C:/Users/jgb10/dev/obelisk/src/fragmentShader.glsl");
+    const std::filesystem::path shaderSourceDir = SHADER_PATH;
+    std::string vertexShaderString = loadShaders(shaderSourceDir.string() + "/vertexShader.glsl");
+    std::string fragmentShaderString = loadShaders(shaderSourceDir.string() + "/fragmentShader.glsl");
     if (vertexShaderString == "" || fragmentShaderString == "") {
         return -1;
     }
