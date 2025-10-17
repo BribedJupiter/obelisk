@@ -175,6 +175,23 @@ int main() {
             {
                 glViewport(0, 0, resized->size.x, resized->size.y);
             }
+
+            if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
+                if (key->scancode == sf::Keyboard::Scancode::Escape) {
+                    running = false;
+                }
+
+                if (key->scancode == sf::Keyboard::Scancode::T) {
+                    // Toggle wireframe draw
+                    static bool showWires = true; 
+                    if (showWires) {
+                        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    } else {
+                        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    }
+                    showWires = !showWires;
+                }
+            }
         }
 
         // Clear buffers
