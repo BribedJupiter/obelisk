@@ -100,19 +100,19 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // Load and compile our shaders
-    Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
-
-    // Create  OpenGL texture
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // Create  OpenGL textures
+    unsigned int texture1, texture2;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
 
     // Setup texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Flip stbi images
+    stbi_set_flip_vertically_on_load(true);
 
     // Load image texture
     int width, height, nrChannels;
@@ -123,11 +123,35 @@ int main() {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
-        std::cerr << "TEXTURE::FAILED_TO_LOAD" << std::endl;
+        std::cerr << "TEXTURE1::FAILED_TO_LOAD" << std::endl;
     }
 
     // Now free the image data since it has been loaded into OpenGL
     stbi_image_free(data);
+
+    // Texture 2
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // Load second image texture
+    std::string facePath = std::filesystem::path(TEXTURE_PATH).string() + "/awesomeface.png";
+    data = stbi_load(facePath.c_str(), &width, &height, &nrChannels, 0);
+    if (data) {
+        // Generate actual texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cerr << "TEXTURE2::FAILED_TO_LOAD" << std::endl;
+    }
+
+    // Now free the image data since it has been loaded into OpenGL
+    stbi_image_free(data);
+
+    // Load and compile our shaders
+    Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
+    ourShader.use();
+    ourShader.setInt("texture1", 0);
+    ourShader.setInt("texture2", 1);
 
     bool running = true;
     while (running) {
@@ -165,7 +189,10 @@ int main() {
 
         // Prepare to draw
         ourShader.use(); // must use shader program before updating uniform values
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
