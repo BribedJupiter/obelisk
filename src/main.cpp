@@ -151,7 +151,7 @@ int main() {
     stbi_image_free(data);
 
     // Load and compile our shaders
-    Shader ourShader("/vertexShader.glsl", "/fragmentShader.glsl");
+    Shader ourShader("/vertexShader.vert", "/fragmentShader.frag");
     ourShader.use();
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
@@ -196,8 +196,27 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // Apply container transformations
+        glm::mat4 trans = glm::mat4(1.0f); // identity matrix
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, static_cast<float>(clock.getElapsedTime().asSeconds()), glm::vec3(0.0, 0.0, 1.0)); // rotate 90 degrees around z axis
+        // note that these transformations are applied in the reverse order of how they are written
+
+        unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+        float scale = static_cast<float>(sin(clock.getElapsedTime().asSeconds()));
+        trans = glm::scale(trans, glm::vec3(scale, scale, scale));
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
         glBindVertexArray(0);
 
         // Draw
