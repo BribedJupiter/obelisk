@@ -211,6 +211,9 @@ int main() {
     // Local space -(model matrix)> world space -(view matrix)> view space -(projection matrix)> 
     //      clip space |vertex shader output|-(viewport transform)> screen space.
     // Model matrix
+    float fov = 45.0f;
+    float aspectRatio = 800.0f / 600.0f;
+
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     // view matrix
@@ -218,7 +221,7 @@ int main() {
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); // translate opposite to desired movement direction
     // perspective projection matrix
     glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
 
     bool running = true;
     while (running) {
@@ -270,7 +273,8 @@ int main() {
 
             model = glm::mat4(1.0f); // reset
             model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
+            float angle = 20.0f * i * static_cast<float>(clock.getElapsedTime().asSeconds());
+
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setMat4("model", model);
 
