@@ -25,6 +25,10 @@ void GLAPIENTRY MessageCallback(GLenum source,
 }
 
 int main() {
+    // window size
+    constexpr int windowWidth = 1920;
+    constexpr int windowHeight = 1080;
+
     // OpenGL Context Setup
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
@@ -36,9 +40,11 @@ int main() {
     contextSettings.sRgbCapable = true;
 
     // SFML Window Setup
-    sf::Window window(sf::VideoMode({1920u, 1080u}), "Obelisk", sf::Style::Default, sf::State::Windowed, contextSettings);
+    sf::Window window(sf::VideoMode({windowWidth, windowHeight}), "Obelisk", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(144);
     window.setVerticalSyncEnabled(true);
+    window.setMouseCursorVisible(false);
+    window.setMouseCursorGrabbed(true);
     if (!window.setActive(true)) {
         return -1;
     };
@@ -207,24 +213,41 @@ int main() {
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
-    // Set up space transformation matrices            
-    // Local space -(model matrix)> world space -(view matrix)> view space -(projection matrix)> 
-    //      clip space |vertex shader output|-(viewport transform)> screen space.
-    // Model matrix
-    float fov = 45.0f;
-    float aspectRatio = 800.0f / 600.0f;
+    // Camera
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    // view matrix
+    // View and Model matrices
     glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); // translate opposite to desired movement direction
-    // perspective projection matrix
-    glm::mat4 projection;
+    glm::mat4 model = glm::mat4(1.0f);
+
+    // Projection
+    float fov = 45.0f;
+    float aspectRatio = static_cast<float>(windowWidth / windowHeight);
+    glm::mat4 projection;    
     projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
 
+    // Mouse positions
+    float lastMouseX = 1920.0f / 2.0f;
+    float lastMouseY = 1080.0f / 2.0f;
+    float pitch = 0.0f;
+    float yaw = -90.0f;
+    sf::Vector2i prevMousePos = sf::Mouse::getPosition(window);
+
     bool running = true;
+    bool firstLoop = true;
     while (running) {
+        float currentFrame = static_cast<float>(clock.getElapsedTime().asMilliseconds());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        float cameraSpeed = 0.05f * deltaTime;
+
+        // Reset the moust to the center
+        sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
+
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -252,6 +275,49 @@ int main() {
                     showWires = !showWires;
                 }
             }
+
+            if (const auto* moved = event->getIf<sf::Event::MouseMovedRaw>()) {           
+                float xoffset = moved->delta.x;
+                float yoffset = moved->delta.y * -1; // invert since OpenGL has y+ as up
+
+                const float sensitivity = 0.1f;
+                xoffset *= sensitivity;
+                yoffset *= sensitivity;
+
+                yaw += xoffset;
+                pitch += yoffset;
+
+                if (pitch > 89.0f) pitch = 89.0f;
+                if (pitch < -89.0f) pitch = -89.0f;
+
+                // Calculate new direction value
+                glm::vec3 direction;
+                direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+                direction.y = sin(glm::radians(pitch));
+                direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+                cameraFront = glm::normalize(direction);
+
+                std::cout << "Pitch:" << pitch << ". Yaw:" << yaw << std::endl;
+            }
+
+            if (const auto* scrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
+                fov += static_cast<float>(scrolled->delta);
+                if (fov < 1.0f) fov = 1.0f;
+                if (fov > 90.0f) fov = 90.0f;
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
+                cameraPos += cameraSpeed * cameraFront;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
+                cameraPos -= cameraSpeed * cameraFront;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
+                cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
+                cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+            }
         }
 
         // Clear buffers
@@ -268,13 +334,21 @@ int main() {
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         for (unsigned int i = 0; i < 10; i++) {
+            // // Camera
+            // LookAt matrix - transform any vector to the camera's coordinate space by multiplying it with this and a translation camera position vector
+            // Note that we have to invert rotation and translation since the world has to move, not the camera
+            // glm has a lookAt function that takes care of this.
+            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
             ourShader.setMat4("view", view);
+
+            // // Projection 
+            projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
             ourShader.setMat4("projection", projection);
 
+            // // Model - world space
             model = glm::mat4(1.0f); // reset
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i * static_cast<float>(clock.getElapsedTime().asSeconds());
-
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setMat4("model", model);
 
@@ -288,6 +362,9 @@ int main() {
 
         // End the frame (internally swaps front and back buffers)
         window.display();
+        
+        // First loop is done
+        firstLoop = false;
     }
 
     // Clean up & release resources
