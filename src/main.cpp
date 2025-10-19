@@ -56,17 +56,54 @@ int main() {
     glDebugMessageCallback( MessageCallback, 0 );
 
     // GL Setup
+    glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
 
     // See the LearnOpenGL textbook
     // Store the rectangle's vertices
     float vertices[] = {
-        // 1st 3 = positions, 2nd 3 = colors, 3rd 3 = texture coords
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // bottom left
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,  0.0f, // top right
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
-    };
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f
+};
 
     // Store which vertices correspond to which shape
     unsigned int indices[] = {
@@ -156,6 +193,18 @@ int main() {
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
+    // Local space -(model matrix)> world space -(view matrix)> view space -(projection matrix)> 
+    //      clip space |vertex shader output|-(viewport transform)> screen space.
+    // Model matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    // view matrix
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); // translate opposite to desired movement direction
+    // perspective projection matrix
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
     bool running = true;
     while (running) {
         while (const std::optional event = window.pollEvent())
@@ -197,25 +246,20 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // Apply container transformations
-        glm::mat4 trans = glm::mat4(1.0f); // identity matrix
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, static_cast<float>(clock.getElapsedTime().asSeconds()), glm::vec3(0.0, 0.0, 1.0)); // rotate 90 degrees around z axis
-        // note that these transformations are applied in the reverse order of how they are written
+        // rotate model
+        model = glm::rotate(model, static_cast<float>(sin(clock.getElapsedTime().asSeconds()) * glm::radians(0.5f)), glm::vec3(0.5f, 1.0f, 0.0f));
 
-        unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        // Update transformation matrices
+        int modelLoc = glGetUniformLocation(ourShader.ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        int viewLoc = glGetUniformLocation(ourShader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        int projectionLoc = glGetUniformLocation(ourShader.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
-        float scale = static_cast<float>(sin(clock.getElapsedTime().asSeconds()));
-        trans = glm::scale(trans, glm::vec3(scale, scale, scale));
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
 
