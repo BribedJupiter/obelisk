@@ -138,7 +138,7 @@ int main() {
     // ---------------------
     // Lighting
     // ---------------------
-    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+    glm::vec3 lightPos(1.2f, 1.0f, -5.0f);
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
@@ -325,7 +325,7 @@ int main() {
         // Cube 2
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         model = glm::mat4(1.0f); // reset
-        model = glm::translate(model, glm::vec3(0, 3, 3));
+        model = glm::translate(model, glm::vec3(0, -1, -3));
         float angle = 20.0f * 2 * static_cast<float>(clock.getElapsedTime().asSeconds());
         model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         litShader.use();
