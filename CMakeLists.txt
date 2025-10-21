@@ -23,7 +23,7 @@ FetchContent_Declare(glm
     SYSTEM)
 FetchContent_MakeAvailable(glm)
 
-add_executable(main src/main.cpp src/obShader.cpp lib/glad/src/glad.c lib/stb/stb_impl.cpp)
+add_executable(main src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad/src/glad.c lib/stb/stb_impl.cpp)
 target_include_directories(main PRIVATE src PRIVATE lib/glad/include PRIVATE lib/glad/KHR PRIVATE lib/stb/include)
 target_compile_features(main PRIVATE cxx_std_17)
 target_compile_definitions(main PRIVATE

@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "obShader.h"
+#include "obCamera.h"
 
 #include <iostream>
 #include <string>
@@ -214,40 +215,23 @@ int main() {
     ourShader.setInt("texture2", 1);
 
     // Camera
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    Camera cam = Camera();
+    ourShader.setMat4("projection", cam.getProjection()); // need to set projection here as cam does not know which shader we're using
+
+    // Timing
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
-    // View and Model matrices
-    glm::mat4 view = glm::mat4(1.0f);
+    // Model matrix that we'll modify for each cube
     glm::mat4 model = glm::mat4(1.0f);
 
-    // Projection
-    float fov = 45.0f;
-    float aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
-    glm::mat4 projection;    
-    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
-
-    // Mouse positions
-    float pitch = 0.0f;
-    float yaw = -90.0f;
-
     bool running = true;
-    bool firstLoop = true;
-
-    // // Projection 
-    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
-    ourShader.setMat4("projection", projection);
-
     while (running) {
         float currentFrame = static_cast<float>(clock.getElapsedTime().asMilliseconds());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        float cameraSpeed = 0.05f * deltaTime;
 
-        // Reset the moust to the center
+        // Reset the moust to the center every frame
         sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
 
         while (const std::optional event = window.pollEvent())
@@ -279,44 +263,24 @@ int main() {
             }
 
             if (const auto* moved = event->getIf<sf::Event::MouseMovedRaw>()) {           
-                float xoffset = moved->delta.x;
-                float yoffset = moved->delta.y * -1; // invert since OpenGL has y+ as up
-
-                const float sensitivity = 0.1f;
-                xoffset *= sensitivity;
-                yoffset *= sensitivity;
-
-                yaw += xoffset;
-                pitch += yoffset;
-
-                if (pitch > 89.0f) pitch = 89.0f;
-                if (pitch < -89.0f) pitch = -89.0f;
-
-                // Calculate new direction value
-                glm::vec3 direction;
-                direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-                direction.y = sin(glm::radians(pitch));
-                direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-                cameraFront = glm::normalize(direction);
+                cam.applyRotation(glm::vec2(moved->delta.x, moved->delta.y));
             }
 
             if (const auto* scrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
-                fov += static_cast<float>(scrolled->delta);
-                if (fov < 1.0f) fov = 1.0f;
-                if (fov > 90.0f) fov = 90.0f;
+                cam.applyZoom(static_cast<float>(scrolled->delta));
             }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
-                cameraPos += cameraSpeed * cameraFront;
+                cam.applyMovement(Camera::MOVEMENT::FORWARD, deltaTime);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
-                cameraPos -= cameraSpeed * cameraFront;
+                cam.applyMovement(Camera::MOVEMENT::BACKWARD, deltaTime);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
-                cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+                cam.applyMovement(Camera::MOVEMENT::LEFT, deltaTime);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
-                cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+                cam.applyMovement(Camera::MOVEMENT::RIGHT, deltaTime);
             }
         }
 
@@ -331,14 +295,9 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // // Camera
-        // LookAt matrix - transform any vector to the camera's coordinate space by multiplying it with this and a translation camera position vector
-        // Note that we have to invert rotation and translation since the world has to move, not the camera
-        // glm has a lookAt function that takes care of this.
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        ourShader.setMat4("view", view);
+        // Update vertices with camera view matrix
+        ourShader.setMat4("view", cam.getView());
 
         for (unsigned int i = 0; i < 10; i++) {
             // // Model - world space
@@ -351,14 +310,12 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // unused currently
+
+        // Unbind current VAO
         glBindVertexArray(0);
 
         // End the frame (internally swaps front and back buffers)
         window.display();
-        
-        // First loop is done
-        firstLoop = false;
     }
-
-    // Clean up & release resources
 }
