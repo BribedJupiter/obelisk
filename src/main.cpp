@@ -226,19 +226,21 @@ int main() {
 
     // Projection
     float fov = 45.0f;
-    float aspectRatio = static_cast<float>(windowWidth / windowHeight);
+    float aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
     glm::mat4 projection;    
     projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
 
     // Mouse positions
-    float lastMouseX = 1920.0f / 2.0f;
-    float lastMouseY = 1080.0f / 2.0f;
     float pitch = 0.0f;
     float yaw = -90.0f;
-    sf::Vector2i prevMousePos = sf::Mouse::getPosition(window);
 
     bool running = true;
     bool firstLoop = true;
+
+    // // Projection 
+    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+    ourShader.setMat4("projection", projection);
+
     while (running) {
         float currentFrame = static_cast<float>(clock.getElapsedTime().asMilliseconds());
         deltaTime = currentFrame - lastFrame;
@@ -296,8 +298,6 @@ int main() {
                 direction.y = sin(glm::radians(pitch));
                 direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
                 cameraFront = glm::normalize(direction);
-
-                std::cout << "Pitch:" << pitch << ". Yaw:" << yaw << std::endl;
             }
 
             if (const auto* scrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
@@ -333,18 +333,14 @@ int main() {
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+        // // Camera
+        // LookAt matrix - transform any vector to the camera's coordinate space by multiplying it with this and a translation camera position vector
+        // Note that we have to invert rotation and translation since the world has to move, not the camera
+        // glm has a lookAt function that takes care of this.
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        ourShader.setMat4("view", view);
+
         for (unsigned int i = 0; i < 10; i++) {
-            // // Camera
-            // LookAt matrix - transform any vector to the camera's coordinate space by multiplying it with this and a translation camera position vector
-            // Note that we have to invert rotation and translation since the world has to move, not the camera
-            // glm has a lookAt function that takes care of this.
-            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            ourShader.setMat4("view", view);
-
-            // // Projection 
-            projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
-            ourShader.setMat4("projection", projection);
-
             // // Model - world space
             model = glm::mat4(1.0f); // reset
             model = glm::translate(model, cubePositions[i]);
@@ -356,9 +352,6 @@ int main() {
         }
 
         glBindVertexArray(0);
-
-        // Draw
-        static int xPos = 0;
 
         // End the frame (internally swaps front and back buffers)
         window.display();

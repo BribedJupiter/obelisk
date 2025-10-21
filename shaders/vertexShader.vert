@@ -12,6 +12,8 @@ uniform mat4 projection;
 
 void main() {
     // Read multiplication from right to left
+    // Camera is responsible for handling view and projection matrices
+    // Each object is responsible for the model matrix (transforming local to world space)
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     colorVal = aColor;
     TexCoord = aTexCoord;
