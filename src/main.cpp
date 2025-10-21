@@ -26,6 +26,10 @@ void GLAPIENTRY MessageCallback(GLenum source,
 }
 
 int main() {
+    // ---------------------
+    // Initialization
+    // ---------------------
+
     // window size
     constexpr int windowWidth = 1920;
     constexpr int windowHeight = 1080;
@@ -64,78 +68,61 @@ int main() {
 
     // GL Setup
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // ---------------------
+    // Vertex Data
+    // ---------------------
 
     // See the LearnOpenGL textbook
-    // Store the rectangle's vertices
+    // Store a cube's vertices
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,     
+        0.5f, -0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,
+        0.5f, -0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
 
-        -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-        0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
 
-        -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f,  0.5f,
+        0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f, 0.0f, 1.0f
-    };
-
-    // Store which vertices correspond to which shape
-    unsigned int indices[] = {
-        0, 1, 3, // triangle 1
-        1, 2, 3 // triangle 2
-    };
-
-    // We want many cubes to be drawn
-    glm::vec3 cubePositions[] {
-        glm::vec3( 0.0f,  0.0f,  0.0f), 
-        glm::vec3( 2.0f,  5.0f, -15.0f), 
-        glm::vec3(-1.5f, -2.2f, -2.5f),  
-        glm::vec3(-3.8f, -2.0f, -12.3f),  
-        glm::vec3( 2.4f, -0.4f, -3.5f),  
-        glm::vec3(-1.7f,  3.0f, -7.5f),  
-        glm::vec3( 1.3f, -2.0f, -2.5f),  
-        glm::vec3( 1.5f,  2.0f, -2.5f), 
-        glm::vec3( 1.5f,  0.2f, -1.5f), 
-        glm::vec3(-1.3f,  1.0f, -1.5f)  
+        -0.5f,  0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f
     };
 
     // Create a vertex array object (VAO) to store vertex attribute states
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
 
     // Create a vertex buffer object to store the vertex data
     unsigned int VBO;
@@ -143,28 +130,31 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // Store which indices OpenGL should use to draw
-    unsigned int EBO;
-    glGenBuffers(1, &EBO); 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     // Link the vertex attributes
-    // Note that the previous VBO is still bound, so this will apply to that
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glBindVertexArray(VAO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // texture coords
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+
+    // ---------------------
+    // Lighting
+    // ---------------------
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+    unsigned int lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // We can reuse the previous buffer 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     // Create  OpenGL textures
     unsigned int texture1, texture2;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
+
+    // ---------------------
+    // Textures
+    // ---------------------
 
     // Setup texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -208,15 +198,12 @@ int main() {
     // Now free the image data since it has been loaded into OpenGL
     stbi_image_free(data);
 
-    // Load and compile our shaders
-    Shader ourShader("/vertexShader.vert", "/fragmentShader.frag");
-    ourShader.use();
-    ourShader.setInt("texture1", 0);
-    ourShader.setInt("texture2", 1);
+    // ---------------------
+    // Camera
+    // ---------------------
 
     // Camera
     Camera cam = Camera();
-    ourShader.setMat4("projection", cam.getProjection()); // need to set projection here as cam does not know which shader we're using
 
     // Timing
     float deltaTime = 0.0f;
@@ -224,6 +211,24 @@ int main() {
 
     // Model matrix that we'll modify for each cube
     glm::mat4 model = glm::mat4(1.0f);
+
+    // ---------------------
+    // Shaders
+    // ---------------------
+
+    // Load and compile our shaders
+    Shader litShader("/basic.vert", "/litObject.frag");
+    glm::vec3 lightColor = {1.0f, 0.5f, 0.31f};
+    glm::vec3 objectColor = {1.0f, 1.0f, 1.0f};
+    litShader.use();
+    litShader.setVec3("objectColor", objectColor);
+    litShader.setVec3("lightColor", lightColor);
+    litShader.setMat4("projection", cam.getProjection());
+
+    // For the light source
+    Shader sourceShader("/basic.vert", "/light.frag");
+    sourceShader.use();
+    sourceShader.setMat4("projection", cam.getProjection());
 
     bool running = true;
     bool focused = true;
@@ -302,29 +307,31 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Prepare to draw
-        ourShader.use(); // must use shader program before updating uniform values
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+        // Cube 1 - light source
+        glBindVertexArray(lightVAO);
+        model = glm::mat4(1.0f); // reset
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f));
+        sourceShader.use();
+        sourceShader.setMat4("model", model);
+        sourceShader.setMat4("view", cam.getView());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // Cube 2
         glBindVertexArray(VAO); // Remembers which buffers are bound already automatically
-
-        // Update vertices with camera view matrix
-        ourShader.setMat4("view", cam.getView());
-
-        for (unsigned int i = 0; i < 10; i++) {
-            // // Model - world space
-            model = glm::mat4(1.0f); // reset
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i * static_cast<float>(clock.getElapsedTime().asSeconds());
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // unused currently
+        model = glm::mat4(1.0f); // reset
+        model = glm::translate(model, glm::vec3(0, 3, 3));
+        float angle = 20.0f * 2 * static_cast<float>(clock.getElapsedTime().asSeconds());
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        litShader.use();
+        litShader.setMat4("model", model);
+        litShader.setMat4("view", cam.getView());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Unbind current VAO
         glBindVertexArray(0);
