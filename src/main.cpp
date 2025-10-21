@@ -226,13 +226,16 @@ int main() {
     glm::mat4 model = glm::mat4(1.0f);
 
     bool running = true;
+    bool focused = true;
     while (running) {
         float currentFrame = static_cast<float>(clock.getElapsedTime().asMilliseconds());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         // Reset the moust to the center every frame
-        sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
+        if (focused) {
+            sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
+        }
 
         while (const std::optional event = window.pollEvent())
         {
@@ -243,6 +246,17 @@ int main() {
             else if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
                 glViewport(0, 0, resized->size.x, resized->size.y);
+            }
+
+            if (event->is<sf::Event::FocusLost>()) {
+                window.setMouseCursorVisible(true);
+                window.setMouseCursorGrabbed(false);
+                focused = false;
+            } 
+            else if (event->is<sf::Event::FocusGained>()) {
+                window.setMouseCursorVisible(false);
+                window.setMouseCursorGrabbed(true);
+                focused = true;
             }
 
             if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
