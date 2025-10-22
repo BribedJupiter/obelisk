@@ -13,7 +13,8 @@ glm::mat4 Camera::getView() {
     // LookAt matrix - transform any vector to the camera's coordinate space by multiplying it with this and a translation camera position vector
     // Note that we have to invert rotation and translation since the world has to move, not the camera
     // glm has a lookAt function that takes care of this.
-    return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    return view;
 }
 
 glm::mat4 Camera::getProjection() {
@@ -44,6 +45,7 @@ void Camera::applyZoom(float delta) {
     fov += delta;
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 90.0f) fov = 90.0f;
+    projection = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
 }
 
 void Camera::applyRotation(glm::vec2 delta) {

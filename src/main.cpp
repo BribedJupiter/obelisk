@@ -223,12 +223,9 @@ int main() {
     litShader.use();
     litShader.setVec3("objectColor", objectColor);
     litShader.setVec3("lightColor", lightColor);
-    litShader.setMat4("projection", cam.getProjection());
 
     // For the light source
     Shader sourceShader("/basic.vert", "/light.frag");
-    sourceShader.use();
-    sourceShader.setMat4("projection", cam.getProjection());
 
     bool running = true;
     bool focused = true;
@@ -320,6 +317,7 @@ int main() {
         sourceShader.use();
         sourceShader.setMat4("model", model);
         sourceShader.setMat4("view", cam.getView());
+        sourceShader.setMat4("projection", cam.getProjection());
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Cube 2
@@ -331,6 +329,7 @@ int main() {
         litShader.use();
         litShader.setMat4("model", model);
         litShader.setMat4("view", cam.getView());
+        litShader.setMat4("projection", cam.getProjection());
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Unbind current VAO
