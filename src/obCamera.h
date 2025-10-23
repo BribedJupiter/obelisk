@@ -21,6 +21,11 @@ class Camera {
         // Return the projection matrix
         glm::mat4 getProjection();
 
+        // Return the camera's position
+        glm::vec3 getPosition() {
+            return cameraPos;
+        }
+
         // Update view matrix in response to player movement
         void applyMovement(MOVEMENT direction, float deltaTime);
 
