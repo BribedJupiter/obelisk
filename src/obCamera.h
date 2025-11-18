@@ -52,7 +52,7 @@ class Camera {
         float zFar = 100.0f;
 
         // Speed settings
-        float cameraSpeed = 0.05f;
+        float cameraSpeed = 0.005f;
         float cameraSensitivity = 0.1f;
 
         // Camera rotation values

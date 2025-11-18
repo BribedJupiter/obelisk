@@ -1,4 +1,5 @@
 #include "glad/glad.h"
+#include <SFML/System/Clock.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 #include <filesystem>
@@ -224,8 +225,11 @@ int main() {
     glm::vec3 lightColor = {1.0f, 0.5f, 0.31f};
     glm::vec3 objectColor = {1.0f, 1.0f, 1.0f};
     litShader.use();
-    litShader.setVec3("objectColor", objectColor);
-    litShader.setVec3("lightColor", lightColor);
+    litShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+    litShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    litShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    litShader.setFloat("material.shininess", 32.0f);
+    litShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
     // For the light source
     Shader sourceShader("/basic.vert", "/light.frag");
@@ -312,6 +316,14 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+        // Light color
+        glm::vec3 lightColor;
+        lightColor.x = sin(clock.getElapsedTime().asSeconds() * 2.0f);
+        lightColor.y = sin(clock.getElapsedTime().asSeconds() * 0.7f);
+        lightColor.z = sin(clock.getElapsedTime().asSeconds() * 1.3f);
+        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
         // Cube 1 - light source
         glBindVertexArray(lightVAO);
         model = glm::mat4(1.0f); // reset
@@ -321,6 +333,7 @@ int main() {
         sourceShader.setMat4("model", model);
         sourceShader.setMat4("view", cam.getView());
         sourceShader.setMat4("projection", cam.getProjection());
+        sourceShader.setVec3("lightColor", diffuseColor);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Cube 2
@@ -333,7 +346,9 @@ int main() {
         litShader.setMat4("model", model);
         litShader.setMat4("view", cam.getView());
         litShader.setMat4("projection", cam.getProjection());
-        litShader.setVec3("lightPos", lightPos);
+        litShader.setVec3("light.position", lightPos);
+        litShader.setVec3("light.ambient", ambientColor);
+        litShader.setVec3("light.diffuse", diffuseColor);
         litShader.setVec3("viewPos", cam.getPosition());
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
