@@ -333,7 +333,7 @@ int main() {
         sourceShader.setMat4("model", model);
         sourceShader.setMat4("view", cam.getView());
         sourceShader.setMat4("projection", cam.getProjection());
-        sourceShader.setVec3("lightColor", diffuseColor);
+        // sourceShader.setVec3("lightColor", diffuseColor); // This doesn't work as intended
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Cube 2
