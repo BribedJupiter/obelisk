@@ -53,7 +53,7 @@ class Camera {
 
         // Speed settings
         float cameraSpeed = 0.005f;
-        float cameraSensitivity = 0.1f;
+        float cameraSensitivity = 0.001f;
 
         // Camera rotation values
         float pitch = 0.0f;

@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 
+#ifndef IS_MACOS
 // Khronos debug function converted to C++ (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
 void GLAPIENTRY MessageCallback(GLenum source,
                  GLenum type,
@@ -25,6 +26,7 @@ void GLAPIENTRY MessageCallback(GLenum source,
 {
     std::cerr << "GL CALLBACK: " << message << std::endl;
 }
+#endif
 
 int main() {
     // ---------------------
@@ -35,21 +37,27 @@ int main() {
     constexpr int windowWidth = 1920;
     constexpr int windowHeight = 1080;
 
+    // Movement flags
+    char MOVE_FORWARD = 1 << 0; // 1
+    char MOVE_BACKWARD = 1 << 1; // 2
+    char MOVE_LEFT = 1 << 2; // 4
+    char MOVE_RIGHT = 1 << 3; // 8
+
     // OpenGL Context Setup
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
     contextSettings.stencilBits = 8;
     contextSettings.antiAliasingLevel = 4;
     contextSettings.majorVersion = 4;
-    contextSettings.minorVersion = 6;
-    contextSettings.attributeFlags = contextSettings.Default;
+    contextSettings.minorVersion = 1;
+    contextSettings.attributeFlags = contextSettings.Core;
     contextSettings.sRgbCapable = true;
 
     // SFML Window Setup
     sf::Window window(sf::VideoMode({windowWidth, windowHeight}), "Obelisk", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(144);
     window.setVerticalSyncEnabled(true);
-    window.setMouseCursorVisible(false);
+    window.setMouseCursorVisible(true); // Needed until mouse movement is fixed
     window.setMouseCursorGrabbed(true);
     if (!window.setActive(true)) {
         return -1;
@@ -63,9 +71,11 @@ int main() {
     // Start the SFML clock
     sf::Clock clock;
 
+#ifndef IS_MACOS
     // Enable debug output (see https://www.khronos.org/opengl/wiki/OpenGL_Error)
     glEnable( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( MessageCallback, 0 );
+#endif
 
     // GL Setup
     glEnable(GL_DEPTH_TEST);
@@ -246,6 +256,7 @@ int main() {
             sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
         }
 
+        char movement = 0; 
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -257,16 +268,16 @@ int main() {
                 glViewport(0, 0, resized->size.x, resized->size.y);
             }
 
-            if (event->is<sf::Event::FocusLost>()) {
-                window.setMouseCursorVisible(true);
-                window.setMouseCursorGrabbed(false);
-                focused = false;
-            } 
-            else if (event->is<sf::Event::FocusGained>()) {
-                window.setMouseCursorVisible(false);
-                window.setMouseCursorGrabbed(true);
-                focused = true;
-            }
+            // if (event->is<sf::Event::FocusLost>()) {
+            //     window.setMouseCursorVisible(true);
+            //     window.setMouseCursorGrabbed(false);
+            //     focused = false;
+            // } 
+            // else if (event->is<sf::Event::FocusGained>()) {
+            //     window.setMouseCursorVisible(false);
+            //     window.setMouseCursorGrabbed(true);
+            //     focused = true;
+            // }
 
             if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
                 if (key->scancode == sf::Keyboard::Scancode::Escape) {
@@ -283,28 +294,66 @@ int main() {
                     }
                     showWires = !showWires;
                 }
+
+                if (key->scancode == sf::Keyboard::Scancode::W) {
+                    std::cout << "Pressed W" << std::endl;
+                    movement |= MOVE_FORWARD;
+                }
+                if (key->scancode == sf::Keyboard::Scancode::S) {
+                    movement |= MOVE_BACKWARD;
+                }
+                if (key->scancode == sf::Keyboard::Scancode::A) {
+                    movement |= MOVE_LEFT;
+                }
+                if (key->scancode == sf::Keyboard::Scancode::D) {
+                    movement |= MOVE_RIGHT;
+                }
             }
 
-            if (const auto* moved = event->getIf<sf::Event::MouseMovedRaw>()) {           
-                cam.applyRotation(glm::vec2(moved->delta.x, moved->delta.y));
+            if (const auto* key = event->getIf<sf::Event::KeyReleased>()) {
+                if (key->scancode == sf::Keyboard::Scancode::W) {
+                    std::cout << "Released W" << std::endl;
+                    movement &= ~MOVE_FORWARD;
+                }
+                if (key->scancode == sf::Keyboard::Scancode::S) {
+                    movement &= ~MOVE_BACKWARD;
+                }
+                if (key->scancode == sf::Keyboard::Scancode::A) {
+                    movement &= ~MOVE_LEFT;
+                }
+                if (key->scancode == sf::Keyboard::Scancode::D) {
+                    movement &= ~MOVE_RIGHT;
+                }
+            }
+
+            if (const auto* moved = event->getIf<sf::Event::MouseMoved>()) {       
+                sf::Vector2i center = static_cast<sf::Vector2i>(window.getSize() / 2u);
+                sf::Vector2i mousePos = moved->position;
+                sf::Vector2i delta = mousePos - center;
+
+                cam.applyRotation(glm::vec2(delta.x, delta.y));
+
+                sf::Mouse::setPosition(center, window);
             }
 
             if (const auto* scrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
                 cam.applyZoom(static_cast<float>(scrolled->delta));
             }
+        }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
-                cam.applyMovement(Camera::MOVEMENT::FORWARD, deltaTime);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
-                cam.applyMovement(Camera::MOVEMENT::BACKWARD, deltaTime);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
-                cam.applyMovement(Camera::MOVEMENT::LEFT, deltaTime);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
-                cam.applyMovement(Camera::MOVEMENT::RIGHT, deltaTime);
-            }
+        // Apply player movement
+        if ((movement & MOVE_FORWARD) == MOVE_FORWARD) {
+            std::cout << "Moving forward" << std::endl;
+            cam.applyMovement(Camera::MOVEMENT::FORWARD, deltaTime);
+        }
+        if ((movement & MOVE_BACKWARD) == MOVE_BACKWARD) {
+            cam.applyMovement(Camera::MOVEMENT::BACKWARD, deltaTime);
+        }
+        if ((movement & MOVE_LEFT) == MOVE_LEFT) {
+            cam.applyMovement(Camera::MOVEMENT::LEFT, deltaTime);
+        }
+        if ((movement & MOVE_RIGHT) == MOVE_RIGHT) {
+            cam.applyMovement(Camera::MOVEMENT::RIGHT, deltaTime);
         }
 
         // Clear buffers

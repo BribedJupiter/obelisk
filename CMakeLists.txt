@@ -23,11 +23,20 @@ FetchContent_Declare(glm
     SYSTEM)
 FetchContent_MakeAvailable(glm)
 
-add_executable(main src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad/src/glad.c lib/stb/stb_impl.cpp)
-target_include_directories(main PRIVATE src PRIVATE lib/glad/include PRIVATE lib/glad/KHR PRIVATE lib/stb/include)
+if (APPLE)
+    add_executable(main src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad_macos/src/glad.c lib/stb/stb_impl.cpp)
+    target_compile_definitions(main PRIVATE IS_MACOS)
+    target_include_directories(main PRIVATE lib/glad_macos/include PRIVATE lib/glad_macos/KHR)
+else()
+    add_executable(main src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad_windows/src/glad.c lib/stb/stb_impl.cpp)
+    target_include_directories(main PRIVATE lib/glad_windows/include PRIVATE lib/glad_windows/KHR)
+endif()
+
+target_include_directories(main PRIVATE src PRIVATE lib/stb/include)
 target_compile_features(main PRIVATE cxx_std_17)
 target_compile_definitions(main PRIVATE
     SHADER_PATH="${CMAKE_SOURCE_DIR}/shaders"
     TEXTURE_PATH="${CMAKE_SOURCE_DIR}/textures"
 )
+
 target_link_libraries(main PRIVATE SFML::Graphics SFML::Audio SFML::Network glm::glm)
