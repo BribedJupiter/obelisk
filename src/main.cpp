@@ -57,7 +57,7 @@ int main() {
     sf::Window window(sf::VideoMode({windowWidth, windowHeight}), "Obelisk", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(144);
     window.setVerticalSyncEnabled(true);
-    window.setMouseCursorVisible(true); // Needed until mouse movement is fixed
+    window.setMouseCursorVisible(false);
     window.setMouseCursorGrabbed(true);
     if (!window.setActive(true)) {
         return -1;
@@ -244,17 +244,15 @@ int main() {
     // For the light source
     Shader sourceShader("/basic.vert", "/light.frag");
 
+    // Store last mouse position
+    sf::Vector2i lastMousePos = sf::Mouse::getPosition(window);
+
     bool running = true;
     bool focused = true;
     while (running) {
         float currentFrame = static_cast<float>(clock.getElapsedTime().asMilliseconds());
-        deltaTime = currentFrame - lastFrame;
+        deltaTime = currentFrame - lastFrame;        
         lastFrame = currentFrame;
-
-        // Reset the moust to the center every frame
-        if (focused) {
-            sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
-        }
 
         char movement = 0; 
         while (const std::optional event = window.pollEvent())
@@ -268,16 +266,16 @@ int main() {
                 glViewport(0, 0, resized->size.x, resized->size.y);
             }
 
-            // if (event->is<sf::Event::FocusLost>()) {
-            //     window.setMouseCursorVisible(true);
-            //     window.setMouseCursorGrabbed(false);
-            //     focused = false;
-            // } 
-            // else if (event->is<sf::Event::FocusGained>()) {
-            //     window.setMouseCursorVisible(false);
-            //     window.setMouseCursorGrabbed(true);
-            //     focused = true;
-            // }
+            if (event->is<sf::Event::FocusLost>()) {
+                window.setMouseCursorVisible(true);
+                window.setMouseCursorGrabbed(false);
+                focused = false;
+            } 
+            else if (event->is<sf::Event::FocusGained>()) {
+                window.setMouseCursorVisible(false);
+                window.setMouseCursorGrabbed(true);
+                focused = true;
+            }
 
             if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
                 if (key->scancode == sf::Keyboard::Scancode::Escape) {
@@ -296,7 +294,6 @@ int main() {
                 }
 
                 if (key->scancode == sf::Keyboard::Scancode::W) {
-                    std::cout << "Pressed W" << std::endl;
                     movement |= MOVE_FORWARD;
                 }
                 if (key->scancode == sf::Keyboard::Scancode::S) {
@@ -312,7 +309,6 @@ int main() {
 
             if (const auto* key = event->getIf<sf::Event::KeyReleased>()) {
                 if (key->scancode == sf::Keyboard::Scancode::W) {
-                    std::cout << "Released W" << std::endl;
                     movement &= ~MOVE_FORWARD;
                 }
                 if (key->scancode == sf::Keyboard::Scancode::S) {
@@ -327,11 +323,9 @@ int main() {
             }
 
             if (const auto* moved = event->getIf<sf::Event::MouseMoved>()) {       
-                sf::Vector2i center = static_cast<sf::Vector2i>(window.getSize() / 2u);
-                sf::Vector2i mousePos = moved->position;
-                sf::Vector2i delta = mousePos - center;
-
+                sf::Vector2i delta = moved->position - lastMousePos;
                 cam.applyRotation(glm::vec2(delta.x, delta.y));
+                lastMousePos = moved->position;
             }
 
             if (const auto* scrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
@@ -341,7 +335,6 @@ int main() {
 
         // Apply player movement
         if ((movement & MOVE_FORWARD) == MOVE_FORWARD) {
-            std::cout << "Moving forward" << std::endl;
             cam.applyMovement(Camera::MOVEMENT::FORWARD, deltaTime);
         }
         if ((movement & MOVE_BACKWARD) == MOVE_BACKWARD) {
@@ -354,6 +347,7 @@ int main() {
             cam.applyMovement(Camera::MOVEMENT::RIGHT, deltaTime);
         }
 
+        // Ensure we move due to velocity even if no input is made
         cam.applyMovement(Camera::MOVEMENT::VELOCITY, deltaTime);
 
         // Clear buffers

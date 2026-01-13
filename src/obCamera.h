@@ -54,7 +54,7 @@ class Camera {
 
         // Speed settings
         float cameraSpeed = 0.005f;
-        float cameraSensitivity = 0.001f;
+        float cameraSensitivity = 0.1f;
         float cameraFriction = 0.005f;
         float cameraAccel = 0.1f;
         float velocityThreshold = 0.01f; // Needs to be greater than cameraFriction
