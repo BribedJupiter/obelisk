@@ -23,21 +23,68 @@ glm::mat4 Camera::getProjection() {
 
 void Camera::applyMovement(MOVEMENT direction, float deltaTime) {
     float speed = cameraSpeed * deltaTime;
-
     switch (direction) {
+        case VELOCITY:
+            break;
         case FORWARD:
+            cameraVelocity += cameraAccel * cameraFront;
             cameraPos += speed * cameraFront;
             break;
         case BACKWARD:
+            cameraVelocity -= cameraAccel * cameraFront;
             cameraPos -= speed * cameraFront;
             break;
         case LEFT:
+            cameraVelocity -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraAccel;
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
             break;
         default:
         case RIGHT:
+            cameraVelocity += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraAccel;
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
             break;
+    }
+
+    // Add velocity
+    cameraPos += cameraVelocity;
+
+    // Decay camera speed by friction amount
+    if (cameraVelocity.x <= 0) {
+        cameraVelocity.x += cameraFriction;
+    } else {
+        cameraVelocity.x -= cameraFriction;
+    }
+    if (cameraVelocity.y <= 0) {
+        cameraVelocity.y += cameraFriction;
+    } else {
+        cameraVelocity.y -= cameraFriction;
+    }
+    if (cameraVelocity.z <= 0) {
+        cameraVelocity.z += cameraFriction;
+    } else {
+        cameraVelocity.z -= cameraFriction;
+    }
+
+    // Ensure we hit zero velocity
+    if (glm::abs(cameraVelocity.x) <= velocityThreshold) {
+        cameraVelocity.x = 0;
+    }
+    if (glm::abs(cameraVelocity.y) <= velocityThreshold) {
+        cameraVelocity.y = 0;
+    }
+    if (glm::abs(cameraVelocity.z) <= velocityThreshold) {
+        cameraVelocity.z = 0;
+    }
+
+    // Ensure we don't go beyond max velocity
+    if (glm::abs(cameraVelocity.x) >= maxVelocity) {
+        cameraVelocity.x = maxVelocity;
+    }
+    if (glm::abs(cameraVelocity.y) >= maxVelocity) {
+        cameraVelocity.y = maxVelocity;
+    }
+    if (glm::abs(cameraVelocity.z) >= maxVelocity) {
+        cameraVelocity.z = maxVelocity;
     }
 }
 

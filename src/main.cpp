@@ -332,8 +332,6 @@ int main() {
                 sf::Vector2i delta = mousePos - center;
 
                 cam.applyRotation(glm::vec2(delta.x, delta.y));
-
-                sf::Mouse::setPosition(center, window);
             }
 
             if (const auto* scrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
@@ -355,6 +353,8 @@ int main() {
         if ((movement & MOVE_RIGHT) == MOVE_RIGHT) {
             cam.applyMovement(Camera::MOVEMENT::RIGHT, deltaTime);
         }
+
+        cam.applyMovement(Camera::MOVEMENT::VELOCITY, deltaTime);
 
         // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

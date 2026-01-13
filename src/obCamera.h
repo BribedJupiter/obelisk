@@ -9,7 +9,8 @@ class Camera {
             FORWARD,
             BACKWARD,
             RIGHT,
-            LEFT
+            LEFT,
+            VELOCITY
         };
 
         // Setup the projection matrix and initalize camera values
@@ -54,6 +55,11 @@ class Camera {
         // Speed settings
         float cameraSpeed = 0.005f;
         float cameraSensitivity = 0.001f;
+        float cameraFriction = 0.005f;
+        float cameraAccel = 0.1f;
+        float velocityThreshold = 0.01f; // Needs to be greater than cameraFriction
+        float maxVelocity = 1.0f;
+        glm::vec3 cameraVelocity;
 
         // Camera rotation values
         float pitch = 0.0f;

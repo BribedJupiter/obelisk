@@ -1,4 +1,4 @@
-####### Obelisk v0.02 #######
+####### Obelisk v0.03 #######
 cmake_minimum_required(VERSION 3.28)
 project(obelisk LANGUAGES CXX C)
 
@@ -24,19 +24,19 @@ FetchContent_Declare(glm
 FetchContent_MakeAvailable(glm)
 
 if (APPLE)
-    add_executable(main src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad_macos/src/glad.c lib/stb/stb_impl.cpp)
-    target_compile_definitions(main PRIVATE IS_MACOS)
-    target_include_directories(main PRIVATE lib/glad_macos/include PRIVATE lib/glad_macos/KHR)
+    add_executable(obelisk src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad_macos/src/glad.c lib/stb/stb_impl.cpp)
+    target_compile_definitions(obelisk PRIVATE IS_MACOS)
+    target_include_directories(obelisk PRIVATE lib/glad_macos/include PRIVATE lib/glad_macos/KHR)
 else()
-    add_executable(main src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad_windows/src/glad.c lib/stb/stb_impl.cpp)
-    target_include_directories(main PRIVATE lib/glad_windows/include PRIVATE lib/glad_windows/KHR)
+    add_executable(obelisk src/main.cpp src/obShader.cpp src/obCamera.cpp lib/glad_windows/src/glad.c lib/stb/stb_impl.cpp)
+    target_include_directories(obelisk PRIVATE lib/glad_windows/include PRIVATE lib/glad_windows/KHR)
 endif()
 
-target_include_directories(main PRIVATE src PRIVATE lib/stb/include)
-target_compile_features(main PRIVATE cxx_std_17)
-target_compile_definitions(main PRIVATE
+target_include_directories(obelisk PRIVATE src PRIVATE lib/stb/include)
+target_compile_features(obelisk PRIVATE cxx_std_17)
+target_compile_definitions(obelisk PRIVATE
     SHADER_PATH="${CMAKE_SOURCE_DIR}/shaders"
     TEXTURE_PATH="${CMAKE_SOURCE_DIR}/textures"
 )
 
-target_link_libraries(main PRIVATE SFML::Graphics SFML::Audio SFML::Network glm::glm)
+target_link_libraries(obelisk PRIVATE SFML::Graphics SFML::Audio SFML::Network glm::glm)
